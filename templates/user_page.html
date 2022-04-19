@@ -1,0 +1,48 @@
+{% extends 'base.html' %}
+
+
+{% block title %} User Profile {% endblock %}
+
+{% block content %}
+<div class="container">
+    <h3 class="text-center" style="font-size: 2.5em;">Hello {{user.first_name}} {{user.last_name}} </h3>
+    <p class="text-center font-weight-light" style="font-size: 1em; ">username -
+        {{user.username}} | email - {{user.email}}</p>
+</div>
+
+<div class="text-center pb-4">
+    <form style="display: inline;" action="/users/{{user.username}}/delete">
+        <button class="btn btn-danger">Delete Profile</button>
+    </form>
+    <a class="btn btn-outline-primary" href="/users/{{user.username}}/feedback/add">Add Feedback</a>
+</div>
+
+<div class="container">
+    <p class="text-center font-weight-light" style="font-size: 1.5em;">Feedbacks</p>
+    <div id="accordion">
+        {% for feedback in user.feedback %}
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    {{feedback.title}}
+                </h5>
+            </div>
+
+            <div data-parent="#accordion">
+                <div class="card-body">
+                    {{feedback.content}}
+                    <div>
+                        <form action="/feedback/{{feedback.id}}/delete" style="display: inline;" method="POST">
+                            <button class="btn btn-outline-danger btn-sm">delete</button>
+                        </form>
+                        <a class=" btn btn-outline-success btn-sm" href="/feedback/{{feedback.id}}/update">update</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {% endfor %}
+
+    </div>
+</div>
+{% endblock %}
