@@ -47,7 +47,7 @@ def register():
 
         db.session.commit()
         session['user'] = user.username
-        flash("Successfull Created Your Account!")
+        flash("Successfull Created Your Account!", "alert-success")
         return redirect(f"/users/{session['user']}")
 
     else:
@@ -70,7 +70,7 @@ def login():
 
         user = User.authenticate(username, password)
         if user:
-            flash(f"Welcome Back, {user.username}!")
+            flash(f"Welcome Back, {user.username}!", "alert-primary")
             session['user'] = user.username
             return redirect(f'/users/{user.username}')
         else:
@@ -83,6 +83,10 @@ def login():
 @app.route('/logout')
 def logout_user():
     """Log User out"""
+    # if no user logged in we reroute to login page
+    if "user" not in session:
+        flash("Please login first!", "alert-warning")
+        return redirect("/")
 
     session.pop('user')
     return redirect('/')
@@ -93,12 +97,12 @@ def user_page(username):
     """Display User Profile Page"""
     # if no user logged in we reroute to login page
     if "user" not in session:
-        flash("Please login first!")
+        flash("Please login first!", "alert-warning")
         return redirect("/")
 
     # handle unauthorized user in user profile
     if session["user"] != username:
-        flash("DO NOT have access to this page!")
+        flash("DO NOT have access to this page!", "alert-danger")
         return redirect("/")
 
     user = User.query.filter_by(username=username).first()
@@ -106,17 +110,35 @@ def user_page(username):
     return render_template("user_page.html", user=user)
 
 
+@app.route("/users/<username>/delete")
+def delete_page(username):
+    if "user" not in session:
+        flash("Please login first!", "alert-warning")
+        return redirect("/")
+
+    user = User.query.filter_by(username=username).first()
+
+    if session["user"] != user.username:
+        flash("DO NOT HAVE ACCESS", "alert-danger")
+        return redirect("/")
+
+    db.session.delete(user)
+    db.session.commit()
+    session.pop('user')
+    return redirect("/")
+
+
 @app.route("/users/<username>/feedback/add", methods=["GET", "POST"])
 def add_feedback(username):
     """Display Form for adding new feedback, handle form"""
     # handle no logged in user
     if "user" not in session:
-        flash("Please login first!")
+        flash("Please login first!", "alert-warning")
         return redirect("/")
 
     # handle unauthorized user
     if session["user"] != username:
-        flash("DO NOT have access to this page!")
+        flash("DO NOT have access to this page!", "alert-danger")
         return redirect("/")
 
     form = FeedbackForm()
@@ -134,7 +156,7 @@ def add_feedback(username):
         db.session.add(feedback)
         db.session.commit()
 
-        flash(f"Feedback - {title} created!")
+        flash(f"Feedback - {title} created!", "alert-success")
         return redirect(f"/users/{feedback.username}")
 
     else:
@@ -146,14 +168,14 @@ def update_feedback(feedback_id):
     """Display Form for updating feedback, handle form"""
     # handle no user
     if "user" not in session:
-        flash("Please login first!")
+        flash("Please login first!", "alert-warning")
         return redirect("/")
 
     feedback = Feedback.query.filter_by(id=feedback_id).first()
 
     # handle unauthorized user
     if session["user"] != feedback.username:
-        flash("DO NOT have access to this page!")
+        flash("DO NOT have access to this page!", "alert-danger")
         return redirect("/")
 
     form = FeedbackForm()
@@ -164,7 +186,7 @@ def update_feedback(feedback_id):
 
         db.session.commit()
 
-        flash(f"Feedback {feedback.title} updated")
+        flash(f"Feedback {feedback.title} updated", "alert-success")
         return redirect(f"/users/{feedback.username}")
 
     else:
@@ -176,13 +198,13 @@ def delete_feedback(feedback_id):
     """Delete feedback."""
 
     if "user" not in session:
-        flash("Please login first!")
+        flash("Please login first!", "alert-warning")
         return redirect("/")
 
     feedback = Feedback.query.filter_by(id=feedback_id).first()
 
     if session["user"] != feedback.username:
-        flash("DO NOT HAVE ACCESS")
+        flash("DO NOT HAVE ACCESS", "alert-danger")
         return redirect("/")
 
     db.session.delete(feedback)
