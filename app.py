@@ -116,9 +116,10 @@ def delete_page(username):
         flash("Please login first!", "alert-warning")
         return redirect("/")
 
+    # will retrieve user or None if no such user
     user = User.query.filter_by(username=username).first()
 
-    if session["user"] != user.username:
+    if user == None or session["user"] != user.username:
         flash("DO NOT HAVE ACCESS", "alert-danger")
         return redirect("/")
 
